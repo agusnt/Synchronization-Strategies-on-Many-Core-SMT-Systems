@@ -3,8 +3,6 @@
 
 using namespace std;
 
-#define NOPS 30000
-
 Node::Node(uint64_t k, char** d, Node *n)
 {
     key = k;
@@ -102,7 +100,7 @@ inline void HT::endHTM(std::atomic<bool> &spinlock)
     }
 }
 
-void HT::add(uint64_t k, char **d, bool init)
+void HT::add(uint64_t k, char **d)
 {
     int index = k % size;
     bool added = true;
@@ -115,9 +113,9 @@ void HT::add(uint64_t k, char **d, bool init)
     Node *newNode = new Node(k, d, nullptr);
 
     asm volatile("":::"memory"); // Avoid gcc reorder 
-    if (!init) startHTM(array[index].spinlock);
+    startHTM(array[index].spinlock);
     idx = array[index].pointer; 
-    prev = &(idx->next);
+    prev = &(array[index].pointer);
 
     // Search for the position where the new node will be added
     while(idx && idx->key < k)
@@ -138,16 +136,7 @@ void HT::add(uint64_t k, char **d, bool init)
         *prev = newNode;
     }
     // End transaction
-    if (!init) {
-		asm volatile (
-        	"loop_1:          \n\t"
-        	"   dec %0      \n\t"
-        	"   jnz loop_1    \n\t"
-        	: // Output vars
-        	: "r" (NOPS)); // Input vars (src == 0)
-	}
-	//for (volatile unsigned long long nop = 0; nop < NOPS; nop++) asm("");
-    if (!init) endHTM(array[index].spinlock);
+    endHTM(array[index].spinlock);
     asm volatile("":::"memory"); // Avoid gcc reorder 
 }
 
@@ -175,14 +164,6 @@ void HT::del(uint64_t k)
         *prev = idx->next;
     }
     // End Transaction
-	asm (
-    	"loop_2:          \n\t"
-    	"   dec %0      \n\t"
-    	"   jnz loop_2    \n\t"
-    	: // Output vars
-    	: "r" (NOPS)); // Input vars (src == 0)
-
-    //for (volatile unsigned long long nop = 0; nop < NOPS; nop++) asm("");
     endHTM(array[index].spinlock);
     asm volatile("":::"memory"); // Avoid gcc reorder 
 

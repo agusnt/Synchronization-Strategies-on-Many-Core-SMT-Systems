@@ -45,8 +45,6 @@ class HT
         // as the best number or retries
         const int limit = 20;
 
-        //std::atomic<bool> *spinlock;
-
         struct htm_counters {
             uint64_t abort = 0;
             uint64_t commit = 0;
@@ -66,7 +64,7 @@ class HT
         HT(int s);
         ~HT();
         char** get(uint64_t k);
-        void add(uint64_t k, char **d, bool init);
+        void add(uint64_t k, char **d);
         void del(uint64_t k);
         void printHT();
         void printHTM();
