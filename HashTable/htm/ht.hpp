@@ -9,6 +9,7 @@
 #include <immintrin.h>
 
 #define MAX_THREADS 88
+#define RETRY_LIMIT 10
 
 class Node
 {
@@ -29,13 +30,12 @@ class Node
 class HT
 {
     private:
+        alignas(64) std::atomic<bool> spinlock;
         alignas(64) Node **array;
         alignas(64) int size;
         // Vars for HTM purpose
         // 15-Pereira-HTM_characteristics_seralization_Haswell -> This paper give about 10
         // as the best number or retries
-        alignas(64) const int limit = 10;
-        alignas(64) std::atomic<bool> spinlock;
         alignas(64) struct htm_counters {
             uint64_t abort = 0;
             uint64_t commit = 0;

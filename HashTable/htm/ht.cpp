@@ -53,9 +53,9 @@ inline void HT::startHTM()
             } else if(status & _XABORT_CAPACITY) 
             {
                 htm[omp_get_thread_num()].capacity++;
-                retry = limit;
+                retry = RETRY_LIMIT;
             }
-            if (++retry >= limit)
+            if (++retry >= RETRY_LIMIT)
             {
                 htm[omp_get_thread_num()].fallpath++;
                 // Acquire the spinlock
