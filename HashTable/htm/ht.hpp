@@ -10,7 +10,7 @@
 
 #define MAX_THREADS 88
 
-class alignas(64) Node
+class Node
 {
     public:
         uint64_t key;

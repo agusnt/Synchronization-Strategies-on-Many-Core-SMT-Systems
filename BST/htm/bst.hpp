@@ -8,7 +8,7 @@
 #include <atomic>
 #include <omp.h>
 
-class alignas(64) Node
+class Node
 {
     public:
         long key;
